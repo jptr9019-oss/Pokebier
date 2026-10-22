@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uh???</title>
+
+  <style>
+    body {
+      background: black;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    #video {
+      max-width: 90vw;
+      max-height: 70vh;
+      margin-top: 20px;
+      background: black;
+      display: none;
+    }
+
+    #startBtn,
+    #botao-continue {
+      padding: 15px 30px;
+      background: #444;
+      border: 2px solid white;
+      color: white;
+      font-size: 1.2em;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    #startBtn:hover,
+    #botao-continue:hover {
+      background: #666;
+    }
+
+    #botao-continue {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="startBtn">
+    <img src="Pokebier/public/assets/imagens/clique_em_mim2.png"
+         alt="Clique para iniciar">
+  </button>
+
+  <video id="video" src="Pokebier/public/assets/imagens/flowery_intro.mp4"></video>
+
+<audio id="audio" src="audio_folder/I_LOVE_TV_intro_audio.ogg"></audio>
+
+  <a href="tutorial.html" id="link-continue" style="display: none;">
+    <button id="botao-continue">
+      <img src="Pokebier/public/assets/imagens/continue_botao.png"
+           alt="Continuar">
+    </button>
+  </a>
+
+  <script>
+    const btn = document.getElementById("startBtn");
+    const video = document.getElementById("video");
+    const botaocontinue = document.getElementById("botao-continue");
+    const linkContinue = document.getElementById("link-continue");
+
+   btn.addEventListener("click", async () => {
+  try {
+    video.style.display = "block";
+    btn.style.display = "none";
+
+    audio.volume = 1.0;
+    audio.currentTime = 0;
+
+    video.muted = true;
+
+    await Promise.all([
+      video.play(),
+      audio.play()
+    ]);
+  } catch (err) {
+    console.error("Erro ao iniciar vídeo ou áudio:", err);
+  }
+});
+
+   video.addEventListener("ended", () => {
+  audio.pause();
+  audio.currentTime = 0;
+
+  linkContinue.style.display = "block";
+  botaocontinue.style.display = "block";
+});
+  </script>
+
+</body>
+</html>
