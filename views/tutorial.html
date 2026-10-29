@@ -1,10 +1,10 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Olá gente!</title>
+    <title>Oi amigo!</title>
+
 
     <style>
         body {
@@ -20,6 +20,7 @@
     align-items: center;
     flex-direction: column;
 }
+
 
         #tela-inicial {
             position: fixed;
@@ -39,11 +40,13 @@
             background-position: center;
         }
 
+
         #tela-inicial button {
             border: none;
             background: none;
             cursor: pointer;
         }
+
 
         #flowery {
             position: absolute;
@@ -52,9 +55,42 @@
             transform: translate(-50%, -50%);
             z-index: 5;
             height: auto;
-            width: 200px;
+            width: 100px;
+            image-rendering: pixelated;
             display: none;
         }
+
+
+       
+#imagem-esquerda {
+    position: absolute;
+    top: 35%;
+    left: calc(50% - 180px);
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    width: 150px;
+    max-width: 25vw;
+    height: auto;
+    image-rendering: pixelated;
+    display: none;
+    object-fit: contain;
+}
+
+
+@media (max-width: 600px) {
+    #imagem-esquerda {
+        left: 15%;
+        width: 100px;
+    }
+
+
+    #flowery {
+        width: 80px;
+    }
+}
+
+
+
 
         #caixa-dialogo {
             position: absolute;
@@ -66,6 +102,7 @@
             width: 500px;
             display: none;
         }
+
 
         #btn-avancar {
             position: absolute;
@@ -81,9 +118,11 @@
             display: none;
         }
 
+
         #btn-avancar:hover {
             background-color: rgba(100, 100, 100, 0.8);
         }
+
 
         #vamos_la {
             position: absolute;
@@ -102,13 +141,16 @@
             text-decoration: none;
         }
 
+
         #vamos_la:hover {
             background-color: rgba(100, 100, 100, 0.8);
         }
     </style>
 </head>
 
+
 <body>
+
 
     <div id="tela-inicial">
         <button id="botao_porta">
@@ -119,6 +161,7 @@
         </button>
     </div>
 
+
     <!-- Música de fundo -->
     <audio
         id="flowery_theme"
@@ -126,74 +169,146 @@
         loop>
     </audio>
 
+
+   
+    <!-- Imagem ou GIF opcional à esquerda do Flowery -->
+    <img id="imagem-esquerda" alt="Imagem adicional">
+
+
+
+
     <!-- Imagem ou GIF do Flowery -->
-    <img
-        id="flowery"
-        src="../public/assets/imagens/flowery_horse.png"
-        alt="Flowery"
-    >
+    <img id="flowery" alt="Flowery" style="display: none;">
+
 
     <!-- Caixa de diálogo: preencher quando adicionar diálogos -->
     <img id="caixa-dialogo" src="" alt="Caixa de diálogo">
 
+
     <!-- Botão para avançar os diálogos -->
     <button id="btn-avancar">Avançar</button>
+
 
     <!-- Botão para continuar para a próxima página -->
     <a id="vamos_la" href="I_LOVE_TV_portas_do_amor.html">
         Vamos lá!
     </a>
 
+
     <script>
         const telaInicial = document.getElementById("tela-inicial");
         const botaoPorta = document.getElementById("botao_porta");
         const floweryTheme = document.getElementById("flowery_theme");
 
+
         const flowery = document.getElementById("flowery");
+        const imagemEsquerda = document.getElementById("imagem-esquerda");
         const caixaDialogo = document.getElementById("caixa-dialogo");
         const btnAvancar = document.getElementById("btn-avancar");
         const vamosLa = document.getElementById("vamos_la");
 
+
         // Áudio individual dos diálogos, para uso futuro
         const audio = new Audio();
 
+
         // Adicione os diálogos do Flowery aqui futuramente
         const dialogos = [
-            /*
-            Exemplo de estrutura para adicionar depois:
+
 
             {
-                flowery_sprite: "gif_folder/flowery_dancing.gif",
-                png: "flowery_dialogue_folder/dialogo1.png",
-                audio: "audio_folder/dialogo1.ogg",
+                flowery_sprite: "../public/assets/imagens/flowery_default.png",
+                png: "../public/assets/imagens/flowery_dialogue1.png",
+                audio: "../public/assets/imagens/flowery_audio1.mp3",
                 volumeBoost: 1.0
+            },
+
+
+            {
+                flowery_sprite: "../public/assets/imagens/flowery_default.png",
+                png: "../public/assets/imagens/flowery_dialogue2.png",
+            },
+
+
+            {
+                flowery_sprite: "../public/assets/imagens/flowery_default.png",
+                png: "../public/assets/imagens/flowery_dialogue3.png",
+                audio: "../public/assets/imagens/flowery_audio2.mp3",
+                volumeBoost: 1.0
+            },
+
+
+            {
+                flowery_sprite: "../public/assets/imagens/flowery_mao_no_cabelo.png",
+                png: "../public/assets/imagens/flowery_dialogue4.png",
+                audio: "../public/assets/imagens/flowery_audio3.mp3",
+                volumeBoost: 1.0
+            },
+
+
+            {
+                flowery_sprite: "../public/assets/imagens/flowery_pernas_afastadas.png",
+                png: "../public/assets/imagens/flowery_dialogue5.png",
+                audio: "../public/assets/imagens/flowery_audio3.mp3",
+                volumeBoost: 1.0
+            },
+
+
+            {
+                flowery_sprite: "../public/assets/imagens/flowery_agachado.png",
+                png: "../public/assets/imagens/flowery_dialogue6.png",
+                imagem_esquerda: "../public/assets/imagens/flowery_horse.png"
+            },
+
+
+            {
+                flowery_sprite: "../public/assets/imagens/flowery_orgulhoso.png",
+                png: "../public/assets/imagens/flowery_dialogue7.png",
             }
-            */
+
+
         ];
 
+
         let indiceDialogo = 0;
+
 
         function mostrarDialogo(indice) {
             const dialogo = dialogos[indice];
 
+
             if (!dialogo) return;
+
 
             if (dialogo.flowery_sprite) {
                 flowery.src = dialogo.flowery_sprite;
             }
 
+
+            if (dialogo.imagem_esquerda) {
+        imagemEsquerda.src = dialogo.imagem_esquerda;
+        imagemEsquerda.style.display = "block";
+    } else {
+        imagemEsquerda.removeAttribute("src");
+        imagemEsquerda.style.display = "none";
+    }
+
+
             if (dialogo.png) {
                 caixaDialogo.src = dialogo.png;
             }
+
 
             flowery.style.display = "block";
             caixaDialogo.style.display = "block";
             btnAvancar.style.display = "block";
 
+
             if (dialogo.audio) {
                 audio.pause();
                 audio.src = dialogo.audio;
                 audio.volume = 1.0;
+
 
                 audio.play().catch(err => {
                     console.error("Erro ao tocar áudio do diálogo:", err);
@@ -201,15 +316,18 @@
             }
         }
 
+
         botaoPorta.addEventListener("click", async () => {
             telaInicial.style.display = "none";
             flowery.style.display = "block";
+
 
             try {
                 await floweryTheme.play();
             } catch (err) {
                 console.error("Erro ao tocar a música de fundo:", err);
             }
+
 
             if (dialogos.length > 0) {
                 mostrarDialogo(indiceDialogo);
@@ -218,8 +336,10 @@
             }
         });
 
+
         btnAvancar.addEventListener("click", () => {
             indiceDialogo++;
+
 
             if (indiceDialogo < dialogos.length) {
                 mostrarDialogo(indiceDialogo);
@@ -228,11 +348,12 @@
                 flowery.style.display = "none";
                 caixaDialogo.style.display = "none";
                 btnAvancar.style.display = "none";
+                imagemEsquerda.style.display = "none";
                 vamosLa.style.display = "block";
             }
         });
     </script>
 
+
 </body>
 </html>
-```
