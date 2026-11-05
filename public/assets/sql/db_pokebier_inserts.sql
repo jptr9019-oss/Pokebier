@@ -1,0 +1,9 @@
+insert into efeitos (nome) values ('dor');
+insert into efeitos (nome) values ('preso');
+insert into efeitos (nome) values ('banido');
+insert into efeitos (nome) values ('confuso');
+insert into efeitos (nome) values ('fogo');
+insert into efeitos (nome) values ('rindo');
+insert into efeitos (nome) values ('atordoado');
+insert into efeitos (nome) values ('chocado');
+insert into efeitos (nome) values ('amedrontado');
