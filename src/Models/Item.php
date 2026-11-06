@@ -1,6 +1,6 @@
 <?php
 class Item{
-    require_once '../conexao.php';
+    require_once ('../../conexao.php');
 
     private $nome;
 
