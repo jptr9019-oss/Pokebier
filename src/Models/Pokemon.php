@@ -15,6 +15,8 @@ class Pokemon{
     private $atk4;
     private $atk_special;
 
+    private $id;
+
 
     public function __construct($nome, $hp, $velocidade, $decs, $tipo, $subtipo, $imagem, $atk1, $atk2, $atk3, $atk4, $atk_special){
         $this->nome = $nome;
@@ -29,6 +31,10 @@ class Pokemon{
         $this->atk3 = $atk3;
         $this->atk4 = $atk4;
         $this->atk_special = $atk_special;
+    }
+
+    public function getId(){
+        return $this->id;
     }
     
     public function getNome(){
@@ -67,6 +73,32 @@ class Pokemon{
     public function getAtkSpecial(){
         return $this->atk_special;
     }
+
+    public function insert(){
+
+    }
+
+    public function update(){
+
+    }
+
+    public function delete(){
+
+    }
+
+    public function load(){
+
+    }
+
+    public static function getOne($id){
+
+    }
+
+    public static function getALL(){
+        return [];
+    }
 }
 
+$p = new Pokemon(); 
+$p2 = Pokemon::getOne(1);
 echo 'DEBUG: Pokemon';
