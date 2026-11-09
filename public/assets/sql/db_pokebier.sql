@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS Pokebiers
   id_atk3    INT ,
   id_atk4    INT ,
   id_atk_s   INT ,
+  endimagem  VARCHAR(100) not null,
   PRIMARY KEY (id_pb),
   CONSTRAINT UQ_Pokebiers_nome UNIQUE (nome),
   CONSTRAINT FK_Tipos_TO_Pokebiers
