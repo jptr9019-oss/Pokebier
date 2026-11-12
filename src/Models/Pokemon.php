@@ -116,7 +116,7 @@ class Pokemon{
 
     public function insert(){
         $pdo = getConnection();
-        $sql = "INSERT INTO pokebiers (nome, hp, velocidade, decs, tipo, subtipo, endimagem, atk1, atk2, atk3, atk4, atk_special) VALUES (:n, :hp, :v, :d, :t, :st, :img, :a1, :a2, :a3, :a4, :ats)";
+        $sql = "INSERT INTO pokebiers (nome, hp, velocidade, decs, id_tipo, id_subtipo, endimagem, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s) VALUES (:n, :hp, :v, :d, :t, :st, :img, :a1, :a2, :a3, :a4, :ats)";
         $stmt = $pdo->prepare($sql);
         $ok = $stmt->execute([
             ':n' => $this->nome,
@@ -140,7 +140,7 @@ class Pokemon{
 
     public function update(){
         $pdo = getConnection();
-        $sql = "UPDATE pokebiers SET nome = :n, hp = :hp, velocidade = :v, decs = :d, tipo = :t, subtipo = :st, endimagem = :img, atk1 = :a1, atk2 = :a2, atk3 = :a3, atk4 = :a4, atk_special = :ats WHERE id_pb = :id";
+        $sql = "UPDATE pokebiers SET nome = :n, hp = :hp, velocidade = :v, decs = :d, id_tipo = :t, id_subtipo = :st, endimagem = :img, id_atk1 = :a1, id_atk2 = :a2, id_atk3 = :a3, id_atk4 = :a4, id_atk_s = :ats WHERE id_pb = :id";
         $stmt = $pdo->prepare($sql);
         return $stmt->execute([
             ':n' => $this->nome,
@@ -199,14 +199,14 @@ class Pokemon{
             $p->setHp($dados['hp']);
             $p->setVelocidade($dados['velocidade']);
             $p->setDecs($dados['decs']);
-            $p->setTipo($dados['tipo']);
-            $p->setSubtipo($dados['subtipo']);
+            $p->setTipo($dados['id_tipo']);
+            $p->setSubtipo($dados['id_subtipo']);
+            $p->setAtk1($dados['id_atk1']);
+            $p->setAtk2($dados['id_atk2']);
+            $p->setAtk3($dados['id_atk3']);
+            $p->setAtk4($dados['id_atk4']);
+            $p->setAtkSpecial($dados['id_atk_s']);
             $p->setEndImagem($dados['endimagem']);
-            $p->setAtk1($dados['atk1']);
-            $p->setAtk2($dados['atk2']);
-            $p->setAtk3($dados['atk3']);
-            $p->setAtk4($dados['atk4']);
-            $p->setAtkSpecial($dados['atk_special']);
             return $p;
         }
         return null;

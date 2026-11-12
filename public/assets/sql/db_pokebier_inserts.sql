@@ -30,3 +30,16 @@ insert into tipos (id_tipo, nome, forca, fraq) values (17, 'peak',9 ,12 );
 insert into tipos (id_tipo, nome, forca, fraq) values (18, 'D',15 ,4 );
 
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+
+insert into atks (id_atk, nome, dam) values (1, 'Email de Spam', 10);
+insert into atks (id_atk, nome, dam) values (2, 'Pop-up', 15);
+insert into atks (id_atk, nome, dam) values (3, 'Pétalas Douradas', 10);
+insert into atks (id_atk, nome, dam) values (4, 'Dança do Musgo', 15);
+
+insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (1, 'shildinho', 25);
+insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (2, 'shild', 50);
+insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (3, 'shildão', 75);
+insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (4, 'super shild', 100);
+
+insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (1, 'Spamton', 50, 8, 1, 1, 2, '../../public/assets/imagens/spamton_default.png');
+insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (2, 'Flowery', 60, 7, 3, 3, 4, '../../public/assets/imagens/flowery_default.png');
