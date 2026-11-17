@@ -40,6 +40,7 @@ insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (1, 'shildinho', 2
 insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (2, 'shild', 50);
 insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (3, 'shildão', 75);
 insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (4, 'super shild', 100);
+insert into itens_cura (id_it_cura, nome, qnt_cura_hp, revive) values (5, 'levantador', 15, 1);
 
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (1, 'Spamton', 50, 8, 1, 1, 2, '../../public/assets/imagens/spamton_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (2, 'Flowery', 60, 7, 3, 3, 4, '../../public/assets/imagens/flowery_default.png');
