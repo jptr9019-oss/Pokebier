@@ -168,7 +168,7 @@ class Pokemon{
 
     public function load(){
         $pdo = getConnection();
-        $stmt = $pdo->prepare("SELECT * FROM pokebiers WHERE id = :id");
+        $stmt = $pdo->prepare("SELECT * FROM pokebiers WHERE id_pb = :id");
         $stmt->execute([':id' => $this->id]);
         if($dados = $stmt->fetch(PDO::FETCH_ASSOC)){
             $this->nome = $dados['nome'];
