@@ -1,6 +1,6 @@
 <?php
 require_once '../../conexao.php';
-class Item{
+class Item_cura{
 
     private $nome;
     private $id;
@@ -98,7 +98,7 @@ class Item{
         ]);
         $dados = $stmt->fetch(PDO::FETCH_ASSOC);
         if($dados){
-            $item = new Item();
+            $item = new Item_cura();
             $item->setId($dados["id_it_cura"]);
             $item->setNome($dados["nome"]);
             $item->setQntCura($dados["qnt_cura_hp"]);
@@ -113,7 +113,7 @@ class Item{
         $stmt = $pdo->query("SELECT * FROM itens_cura");
         $itens_cura = [];
         while($dados = $stmt->fetch(PDO::FETCH_ASSOC)){
-            $p = new Item();
+            $p = new Item_cura();
             $p->setId($dados["id_it_cura"]);
             $p->setQntCura($dados["qnt_cura_hp"]);
             $p->setNome($dados["nome"]);
@@ -124,7 +124,7 @@ class Item{
     }
 }
 
-$i = new Item();
-$i = Item::getAll();
+$i = new Item_cura();
+$i = Item_cura::getAll();
 var_dump($i);
 //echo 'DEBUG: Item';
