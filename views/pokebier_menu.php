@@ -133,14 +133,17 @@ body {
             Tutorial
         </button>
 
-        <button onclick="location.href='creditos.php'">
-            Créditos e Mais
-        </button>
-
-        <button onclick="location.href='loja.php'">
+         <button onclick="location.href='loja.php'">
             Loja
         </button>
 
+        <button onclick="location.href='montagem_de_equipe.php'">
+            Montagem de Equipe
+        </button>
+
+        <button onclick="location.href='creditos.php'">
+            Créditos e Mais
+        </button>
 
     </div>
 

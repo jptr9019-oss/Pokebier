@@ -72,6 +72,27 @@ body {
     background-repeat: no-repeat;
 }
 
+#voltar-menu {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+
+    padding: 12px 20px;
+    background-color: #222;
+    color: white;
+    border: 2px solid white;
+    border-radius: 10px;
+
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#voltar-menu:hover {
+    background-color: #555;
+    transform: scale(1.05);
+}
 
 /* Título */
 #titulo-loja {
@@ -262,6 +283,9 @@ body {
 <!-- Loja -->
 <div id="loja">
 
+<button id="voltar-menu" onclick="window.location.href='pokebier_menu.php'">
+    ← Voltar ao menu
+</button>
 
     <h1 id="titulo-loja">POKEBIER - LOJA</h1>
 
