@@ -141,7 +141,7 @@ body {
             Montagem de Equipe
         </button>
 
-        <button onclick="location.href='creditos.php'">
+        <button onclick="location.href='creditos_e_mais.php'">
             Créditos e Mais
         </button>
 

@@ -235,7 +235,7 @@ h1 {
 
 <!-- TELA INICIAL -->
 <div id="tela-inicial">
-    <button id="botao-iniciar">INICIAR</button>
+    <button id="botao-iniciar">Acessar Montagem de Equipe</button>
 </div>
 
 <!-- MÚSICA -->
