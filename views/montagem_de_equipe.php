@@ -1,4 +1,11 @@
+<?php
+session_start();
 
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: inicio_pokebier.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
