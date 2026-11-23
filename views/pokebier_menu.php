@@ -129,7 +129,7 @@ body {
     <!-- Botões do menu -->
     <div id="botoes-menu">
 
-        <button onclick="location.href='jogar.php'">
+        <button onclick="location.href='selecionar_batalha.php'">
             Jogar
         </button>
 
