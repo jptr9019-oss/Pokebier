@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../src/controllers/verificar_login.php';
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -143,6 +147,10 @@ body {
 
         <button onclick="location.href='creditos_e_mais.php'">
             Créditos e Mais
+        </button>
+
+        <button onclick="location.href='../src/controllers/logout.php'">
+            Sair
         </button>
 
     </div>

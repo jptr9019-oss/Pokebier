@@ -1,3 +1,133 @@
+<?php
+session_start();
+
+require_once __DIR__ . '/../autoload.php';
+require_once __DIR__ . '/../conexao.php';
+
+$mensagem = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $acao = $_POST['acao'] ?? '';
+
+    if ($acao === 'cadastro') {
+
+        $apelido = trim($_POST['apelido'] ?? '');
+        $senha = $_POST['senha'] ?? '';
+
+        $pdo = getConnection();
+
+        if ($apelido === '' || $senha === '') {
+
+            $mensagem = "Preencha todos os campos!";
+
+        } else {
+
+            $pdo = getConnection();
+
+            try {
+
+                $pdo->beginTransaction();
+
+                // 1. Verifica se o apelido já existe
+                $stmt = $pdo->prepare(
+                    "SELECT id_usuario FROM Usuario WHERE apelido = :apelido"
+                );
+
+                $stmt->execute([':apelido' => $apelido]);
+
+                if ($stmt->fetch()) {
+                    throw new Exception("Esse apelido já está sendo utilizado!");
+                }
+
+                // 2. Cria uma mochila vazia
+                $pdo->exec("INSERT INTO Mochila () VALUES ()");
+
+                $idMochila = $pdo->lastInsertId();
+
+                // 3. Cria a equipe com os seis Pokébiers padrão
+                $stmt = $pdo->prepare("
+                    INSERT INTO Equipe
+                    (id_pb, id_pb_2, id_pb_3, id_pb_4, id_pb_5, id_pb_6)
+                    VALUES (1, 2, 3, 4, 5, 6)
+                ");
+
+                $stmt->execute();
+
+                $idEquipe = $pdo->lastInsertId();
+
+                // 4. Cria o usuário
+                $usuario = new Usuario();
+
+                $usuario->setApelido($apelido);
+
+                // Protege a senha
+                $usuario->setSenha(
+                    password_hash($senha, PASSWORD_DEFAULT)
+                );
+
+                $usuario->setDinheiro(0);
+                $usuario->setIdMochila($idMochila);
+                $usuario->setIdEquipe($idEquipe);
+
+                // Utiliza a mesma conexão da transação
+                $usuario->insert($pdo);
+
+            
+                $pdo->commit();
+
+// Inicia a sessão do jogador
+$_SESSION['usuario_id'] = $usuario->getId();
+$_SESSION['usuario_apelido'] = $usuario->getApelido();
+
+// Entra no jogo
+header("Location: pokebier_menu.php");
+exit;
+
+            } catch (Exception $e) {
+
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+
+                $mensagem = "Erro ao cadastrar: " . $e->getMessage();
+            }
+        }
+    } elseif ($acao === 'login') {
+
+    $apelido = trim($_POST['apelido'] ?? '');
+    $senha = $_POST['senha'] ?? '';
+
+     $pdo = getConnection();
+
+    $stmt = $pdo->prepare(
+        "SELECT * FROM Usuario WHERE apelido = :apelido"
+    );
+
+    $stmt->execute([':apelido' => $apelido]);
+
+    $dados = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($dados && password_verify($senha, $dados['senha'])) {
+
+        // Login correto
+        session_regenerate_id(true);
+
+        $_SESSION['usuario_id'] = $dados['id_usuario'];
+        $_SESSION['usuario_apelido'] = $dados['apelido'];
+
+        header("Location: pokebier_menu.php");
+        exit;
+
+    } else {
+
+        $mensagem = "Apelido ou senha incorretos!";
+    }
+}
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -218,6 +348,10 @@
 
             <h1>POKEBIER</h1>
 
+            <?php if ($mensagem !== ''): ?>
+    <p><?= htmlspecialchars($mensagem) ?></p>
+<?php endif; ?>
+
             <div class="botoes-tipo">
 
                 <button type="button" id="btn-login" class="ativo">
@@ -238,7 +372,7 @@
 
                 <input 
     type="text" 
-    name="nome" 
+    name="apelido" 
     placeholder="Apelido" 
     required
 >
@@ -263,7 +397,7 @@
 
                 <input
                     type="text"
-                    name="nome"
+                    name="apelido"
                     placeholder="Crie um Apelido"
                     required
                 >

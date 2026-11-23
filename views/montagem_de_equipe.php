@@ -1,11 +1,172 @@
 <?php
-session_start();
+require_once __DIR__ . '/../src/controllers/verificar_login.php';
+require_once __DIR__ . '/../conexao.php';
 
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: inicio_pokebier.php");
+$pdo = getConnection();
+
+$idUsuario = $_SESSION['usuario_id'];
+
+// Busca a equipe pertencente ao usuário logado
+$stmt = $pdo->prepare("
+    SELECT
+        e.id_equipe,
+        e.id_pb,
+        e.id_pb_2,
+        e.id_pb_3,
+        e.id_pb_4,
+        e.id_pb_5,
+        e.id_pb_6
+    FROM Usuario u
+    INNER JOIN Equipe e ON u.id_equipe = e.id_equipe
+    WHERE u.id_usuario = :id_usuario
+");
+
+$stmt->execute([':id_usuario' => $idUsuario]);
+
+$dadosEquipe = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Busca os Pokebiers evoluídos desbloqueados pelo usuário
+$stmt = $pdo->prepare("
+    SELECT id_pb
+    FROM p_u
+    WHERE id_usuario = :id_usuario
+");
+
+$stmt->execute([':id_usuario' => $idUsuario]);
+
+$pokebiersDesbloqueados = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+if (!$dadosEquipe) {
+    die("Não foi possível encontrar a equipe deste usuário.");
+}
+
+// Transforma as seis colunas em um array
+$equipeAtual = [];
+
+for ($i = 1; $i <= 6; $i++) {
+    $coluna = $i === 1 ? 'id_pb' : 'id_pb_' . $i;
+
+    if ($dadosEquipe[$coluna] !== null) {
+        $equipeAtual[] = (int) $dadosEquipe[$coluna];
+    }
+}
+
+
+// PROCESSAMENTO DO SALVAMENTO
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    header('Content-Type: application/json; charset=utf-8');
+
+    $dados = json_decode(file_get_contents('php://input'), true);
+
+    if (($dados['acao'] ?? '') !== 'salvar_equipe') {
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => 'Ação inválida.'
+        ]);
+        exit;
+    }
+
+    $novaEquipe = $dados['equipe'] ?? [];
+
+    // Verifica quantidade mínima e máxima
+    if (
+        !is_array($novaEquipe) ||
+        count($novaEquipe) < 1 ||
+        count($novaEquipe) > 6
+    ) {
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => 'A equipe precisa ter entre 1 e 6 Pokebiers.'
+        ]);
+        exit;
+    }
+
+    // Verifica se não existem Pokebiers repetidos
+    $novaEquipe = array_map('intval', $novaEquipe);
+
+    if (count($novaEquipe) !== count(array_unique($novaEquipe))) {
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => 'Não é permitido repetir Pokebiers.'
+        ]);
+        exit;
+    }
+
+    // IDs de 1 a 10 começam desbloqueados.
+// As evoluções dependem dos registros na tabela p_u.
+$idsPermitidos = array_merge(
+    range(1, 10),
+    array_map('intval', $pokebiersDesbloqueados)
+);
+
+foreach ($novaEquipe as $id) {
+
+    if (!in_array($id, $idsPermitidos, true)) {
+
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => 'Você não pode utilizar esse Pokebier ainda.'
+        ]);
+
+        exit;
+    }
+}
+
+    // Confere se todos os Pokebiers existem no banco
+    $placeholders = implode(',', array_fill(0, count($novaEquipe), '?'));
+
+    $stmt = $pdo->prepare("
+        SELECT id_pb
+        FROM Pokebiers
+        WHERE id_pb IN ($placeholders)
+    ");
+
+    $stmt->execute($novaEquipe);
+
+    if ($stmt->rowCount() !== count($novaEquipe)) {
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => 'Um ou mais Pokebiers não existem no banco.'
+        ]);
+        exit;
+    }
+
+    // Preenche os espaços restantes com NULL
+    $novaEquipe = array_pad($novaEquipe, 6, null);
+
+    // Atualiza a equipe
+    $stmt = $pdo->prepare("
+        UPDATE Equipe
+        SET
+            id_pb = :pb1,
+            id_pb_2 = :pb2,
+            id_pb_3 = :pb3,
+            id_pb_4 = :pb4,
+            id_pb_5 = :pb5,
+            id_pb_6 = :pb6
+        WHERE id_equipe = :id_equipe
+    ");
+
+    $stmt->execute([
+        ':pb1' => $novaEquipe[0],
+        ':pb2' => $novaEquipe[1],
+        ':pb3' => $novaEquipe[2],
+        ':pb4' => $novaEquipe[3],
+        ':pb5' => $novaEquipe[4],
+        ':pb6' => $novaEquipe[5],
+        ':id_equipe' => $dadosEquipe['id_equipe']
+    ]);
+
+    echo json_encode([
+        'sucesso' => true,
+        'mensagem' => 'Equipe salva com sucesso!'
+    ]);
+
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -277,159 +438,255 @@ h1 {
 
 <script>
     const pokebiers = [
-        { id: 1, nome: "Flowery", imagem: "flowery_default.png", evolucao: false, desbloqueado: true },
-        { id: 2, nome: "Spamton", imagem: "Spamton_default.png", evolucao: false, desbloqueado: true },
+        { id: 1, nome: "Spamton", imagem: "Spamton_default.png", evolucao: false, desbloqueado: true },
+        { id: 2, nome: "Flowery", imagem: "flowery_default.png", evolucao: false, desbloqueado: true },
         { id: 3, nome: "Barriguinha Mole", imagem: "barriguinha_mole_default.gif", evolucao: false, desbloqueado: true },
         { id: 4, nome: "Dark Magician", imagem: "dark_magician_default.png", evolucao: false, desbloqueado: true },
         { id: 5, nome: "Mesmer", imagem: "mesmer_default.gif", evolucao: false, desbloqueado: true },
         { id: 6, nome: "Chiquinho Gavião", imagem: "chiquinho_gaviao_default.png", evolucao: false, desbloqueado: true },
         { id: 7, nome: "Verity", imagem: "verity_default.png", evolucao: false, desbloqueado: true },
         { id: 8, nome: "Inspetor Shepherd", imagem: "inspetor_shepherd_default.png", evolucao: false, desbloqueado: true },
-        { id: 9, nome: "Territo", imagem: "territo.png", evolucao: false, desbloqueado: true },
-        { id: 10, nome: "Sombrio", imagem: "sombrio.png", evolucao: false, desbloqueado: true },
+        { id: 9, nome: "Giorno Giovanna", imagem: "giorno_default.png", evolucao: false, desbloqueado: true },
+        { id: 10, nome: "Eric", imagem: "imagem_para_teste.png", evolucao: false, desbloqueado: true },
 
         // Evoluções: começam bloqueadas
-        { id: 11, nome: "OMEGA Flowery", imagem: "omega_flowery_default.gif", evolucao: true, desbloqueado: false },
-        { id: 12, nome: "Spamton NEO", imagem: "spamton_neo_default.gif", evolucao: true, desbloqueado: false },
+        { id: 11, nome: "Spamton NEO", imagem: "spamton_neo_default.gif", evolucao: true, desbloqueado: false },
+        { id: 12, nome: "OMEGA Flowery", imagem: "omega_flowery_default.gif", evolucao: true, desbloqueado: false },
         { id: 13, nome: "Barriguinha Mole e Dollynho", imagem: "barriguinha_mole_e_dollynho_default.png", evolucao: true, desbloqueado: false },
         { id: 14, nome: "Dark Magician of Chaos", imagem: "dark_magician_of_chaos_default.png", evolucao: true, desbloqueado: false },
-        { id: 15, nome: "Chiquinho Gavião Satisfeito", imagem: "chiquinho_gaviao_satisfeito_default.gif", evolucao: true, desbloqueado: false },
-        { id: 16, nome: "Mesmer Despertada", imagem: "mesmer_despertada_default.png", evolucao: true, desbloqueado: false },
+        { id: 15, nome: "Mesmer (Despertada)", imagem: "mesmer_despertada_default.png", evolucao: true, desbloqueado: false },
+        { id: 16, nome: "Chiquinho Gavião Satisfeito", imagem: "chiquinho_gaviao_satisfeito_default.gif", evolucao: true, desbloqueado: false },
         { id: 17, nome: "Lord Verity", imagem: "lord_verity_default.png", evolucao: true, desbloqueado: false },
         { id: 18, nome: "Con D. Oriano", imagem: "con_d_oriano_default.png", evolucao: true, desbloqueado: false },
-        { id: 19, nome: "Terrassauro", imagem: "terrassauro.png", evolucao: true, desbloqueado: false },
-        { id: 20, nome: "Umbrius", imagem: "umbrius.png", evolucao: true, desbloqueado: false }
+        { id: 19, nome: "Giorno Giovanna (Requiem)", imagem: "giorno_requiem_default.png", evolucao: true, desbloqueado: false },
+        { id: 20, nome: "Evil Eric", imagem: "imagem_para_teste.png", evolucao: true, desbloqueado: false }
     ];
 
-    // Equipe inicial do jogador
-    let equipe = [1, 2, 3, 4, 5, 6];
 
-    // Guarda o espaço da equipe que o jogador quer substituir
-    let slotSelecionado = null;
+    // Configurações da equipe
+const MAX_POKEBIERS_EQUIPE = 6;
+const MIN_POKEBIERS_EQUIPE = 1;
 
-    const pastaImagens = "../public/assets/imagens/";
+// Equipe carregada do banco pelo PHP
+let equipe = <?= json_encode($equipeAtual) ?>;
 
-    function mostrarEquipe() {
-        const container = document.getElementById("slots-equipe");
+const pokebiersDesbloqueados = <?= json_encode(array_map('intval', $pokebiersDesbloqueados)) ?>;
 
-        container.innerHTML = "";
+// Atualiza o estado das evoluções conforme os desbloqueios do banco
+pokebiers.forEach(pokebier => {
 
-        for (let i = 0; i < 6; i++) {
-            const idPokebier = equipe[i];
-            const pokebier = pokebiers.find(p => p.id === idPokebier);
-
-            if (pokebier) {
-                container.innerHTML += `
-                    <div class="slot ${slotSelecionado === i ? 'selecionado' : ''}"
-                         onclick="selecionarSlot(${i})">
-
-                        <img src="${pastaImagens + pokebier.imagem}"
-                             alt="${pokebier.nome}">
-
-                        <h3>${pokebier.nome}</h3>
-
-                        <button class="remover"
-                                onclick="event.stopPropagation(); removerPokebier(${i})">
-                            X
-                        </button>
-                    </div>
-                `;
-            } else {
-                container.innerHTML += `
-                    <div class="slot vazio ${slotSelecionado === i ? 'selecionado' : ''}"
-                         onclick="selecionarSlot(${i})">
-                        <span>+</span>
-                        <p>Vazio</p>
-                    </div>
-                `;
-            }
-        }
+    if (pokebier.evolucao && pokebiersDesbloqueados.includes(pokebier.id)) {
+        pokebier.desbloqueado = true;
     }
 
-    function mostrarPokebiers() {
-        const container = document.getElementById("lista-pokebiers");
+});
 
-        container.innerHTML = "";
+// Guarda o espaço selecionado
+let slotSelecionado = null;
 
-        pokebiers.forEach(pokebier => {
-            const jaNaEquipe = equipe.includes(pokebier.id);
+const pastaImagens = "../public/assets/imagens/";
+
+
+function mostrarEquipe() {
+
+    const container = document.getElementById("slots-equipe");
+
+    container.innerHTML = "";
+
+    for (let i = 0; i < MAX_POKEBIERS_EQUIPE; i++) {
+
+        const idPokebier = equipe[i];
+
+        const pokebier = pokebiers.find(
+            p => p.id === idPokebier
+        );
+
+        if (pokebier) {
 
             container.innerHTML += `
-                <div class="pokebier-card
-                    ${!pokebier.desbloqueado ? 'bloqueado' : ''}
-                    ${jaNaEquipe ? 'na-equipe' : ''}"
-                    onclick="adicionarPokebier(${pokebier.id})">
+                <div class="slot ${slotSelecionado === i ? 'selecionado' : ''}"
+                     onclick="selecionarSlot(${i})">
 
                     <img src="${pastaImagens + pokebier.imagem}"
                          alt="${pokebier.nome}">
 
                     <h3>${pokebier.nome}</h3>
 
-                    ${!pokebier.desbloqueado
-                        ? '<span class="cadeado">🔒 Bloqueado</span>'
-                        : jaNaEquipe
-                            ? '<span class="status">Na equipe</span>'
-                            : '<span class="status">Disponível</span>'
-                    }
+                    <button class="remover"
+                            onclick="event.stopPropagation(); removerPokebier(${i})">
+                        X
+                    </button>
                 </div>
             `;
-        });
-    }
-
-    function selecionarSlot(indice) {
-        slotSelecionado = indice;
-
-        document.getElementById("mensagem").textContent =
-            "Agora escolha um Pokebier para esse espaço.";
-
-        mostrarEquipe();
-    }
-
-    function adicionarPokebier(id) {
-        const pokebier = pokebiers.find(p => p.id === id);
-
-        if (!pokebier.desbloqueado) {
-            alert("Você ainda não desbloqueou esse Pokebier!");
-            return;
-        }
-
-        if (equipe.includes(id)) {
-            alert("Esse Pokebier já está na sua equipe!");
-            return;
-        }
-
-        if (slotSelecionado !== null) {
-            
-            equipe[slotSelecionado] = id;
-            slotSelecionado = null;
-
-        } else if (equipe.length < 6) {
-            
-            equipe.push(id);
 
         } else {
-            alert("Sua equipe está cheia! Selecione um espaço para substituir.");
-            return;
+
+            container.innerHTML += `
+                <div class="slot vazio ${slotSelecionado === i ? 'selecionado' : ''}"
+                     onclick="selecionarSlot(${i})">
+
+                    <span>+</span>
+                    <p>Vazio</p>
+
+                </div>
+            `;
+        }
+    }
+}
+
+
+function mostrarPokebiers() {
+
+    const container = document.getElementById("lista-pokebiers");
+
+    container.innerHTML = "";
+
+    pokebiers.forEach(pokebier => {
+
+        const jaNaEquipe = equipe.includes(pokebier.id);
+
+        container.innerHTML += `
+            <div class="pokebier-card
+                ${!pokebier.desbloqueado ? 'bloqueado' : ''}
+                ${jaNaEquipe ? 'na-equipe' : ''}"
+                onclick="adicionarPokebier(${pokebier.id})">
+
+                <img src="${pastaImagens + pokebier.imagem}"
+                     alt="${pokebier.nome}">
+
+                <h3>${pokebier.nome}</h3>
+
+                ${!pokebier.desbloqueado
+                    ? '<span class="cadeado">🔒 Bloqueado</span>'
+                    : jaNaEquipe
+                        ? '<span class="status">Na equipe</span>'
+                        : '<span class="status">Disponível</span>'
+                }
+            </div>
+        `;
+    });
+}
+
+
+function selecionarSlot(indice) {
+
+    slotSelecionado = indice;
+
+    document.getElementById("mensagem").textContent =
+        "Agora escolha um Pokebier para esse espaço.";
+
+    mostrarEquipe();
+}
+
+
+function adicionarPokebier(id) {
+
+    const pokebier = pokebiers.find(p => p.id === id);
+
+    if (!pokebier || !pokebier.desbloqueado) {
+        alert("Você ainda não desbloqueou esse Pokebier!");
+        return;
+    }
+
+    if (equipe.includes(id)) {
+        alert("Esse Pokebier já está na sua equipe!");
+        return;
+    }
+
+    if (slotSelecionado !== null) {
+
+        // Substitui um Pokebier existente
+        if (slotSelecionado < equipe.length) {
+            equipe[slotSelecionado] = id;
+        }
+
+        // Adiciona em um espaço vazio
+        else if (equipe.length < MAX_POKEBIERS_EQUIPE) {
+            equipe.push(id);
+        }
+
+        slotSelecionado = null;
+
+    } else if (equipe.length < MAX_POKEBIERS_EQUIPE) {
+
+        equipe.push(id);
+
+    } else {
+
+        alert("Sua equipe está cheia! Selecione um espaço para substituir.");
+        return;
+    }
+
+    atualizarPagina();
+
+    salvarEquipe();
+}
+
+
+function removerPokebier(indice) {
+
+    if (equipe.length <= MIN_POKEBIERS_EQUIPE) {
+
+        alert("Sua equipe precisa ter pelo menos 1 Pokebier!");
+        return;
+    }
+
+    equipe.splice(indice, 1);
+
+    slotSelecionado = null;
+
+    atualizarPagina();
+
+    salvarEquipe();
+}
+
+
+function atualizarPagina() {
+
+    mostrarEquipe();
+    mostrarPokebiers();
+}
+
+
+// SALVAR EQUIPE NO BANCO DE DADOS
+
+async function salvarEquipe() {
+
+    try {
+
+        const resposta = await fetch("montagem_de_equipe.php", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                acao: "salvar_equipe",
+                equipe: equipe
+            })
+
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso) {
+            throw new Error(resultado.mensagem);
         }
 
         document.getElementById("mensagem").textContent =
-            "Equipe atualizada com sucesso!";
+            "Equipe salva automaticamente!";
 
-        atualizarPagina();
+    } catch (erro) {
+
+        alert("Erro ao salvar equipe: " + erro.message);
+
     }
+}
 
-    function removerPokebier(indice) {
-        equipe.splice(indice, 1);
-        slotSelecionado = null;
 
-        atualizarPagina();
-    }
-
-    function atualizarPagina() {
-        mostrarEquipe();
-        mostrarPokebiers();
-    }
-
+// TELA INICIAL E MÚSICA
 
 const botaoIniciar = document.getElementById("botao-iniciar");
 const telaInicial = document.getElementById("tela-inicial");
@@ -438,21 +695,17 @@ const musica = document.getElementById("musica");
 
 botaoIniciar.addEventListener("click", function() {
 
-    // Começa a música
     musica.play();
 
-    // Esconde a tela inicial
     telaInicial.style.display = "none";
 
-    // Mostra a montagem de equipe
     paginaEquipe.style.display = "block";
 
 });
 
 
-    // Inicializa a página
-    atualizarPagina();
-
+// Inicializa a página
+atualizarPagina();
 </script>
 
 </body>

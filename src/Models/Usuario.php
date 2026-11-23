@@ -1,5 +1,5 @@
 <?php
-    require_once '../../conexao.php';
+    require_once __DIR__ . '/../../conexao.php';
     class Usuario {
 
         private $id;
@@ -47,21 +47,31 @@
             $this->id_equipe = $id_equipe;
         }
 
-        public function insert(){
-            $pdo = getConnection();
-            $stmt = $pdo->prepare("INSERT INTO usuario (apelido, senha, dinheiro, id_mochi, id_equipe) VALUES (:apelido, :senha, :dinheiro, :id_mochila, :id_equipe)");
-            $ok = $stmt->execute([
-                ':apelido' => $this->apelido,
-                ':senha' => $this->senha,
-                ':dinheiro' => $this->dinheiro,
-                ':id_mochila' => $this->id_mochila,
-                ':id_equipe' => $this->id_equipe
-            ]);
-            if($ok){
-                $this->id = $pdo->lastInsertId();
-            }
-            return $ok;
-        }
+        public function insert($pdo = null){
+    // Se não receber uma conexão, cria uma normalmente
+    $pdo = $pdo ?? getConnection();
+
+    $stmt = $pdo->prepare("
+        INSERT INTO Usuario
+        (apelido, senha, dinheiro, id_mochi, id_equipe)
+        VALUES
+        (:apelido, :senha, :dinheiro, :id_mochila, :id_equipe)
+    ");
+
+    $ok = $stmt->execute([
+        ':apelido' => $this->apelido,
+        ':senha' => $this->senha,
+        ':dinheiro' => $this->dinheiro,
+        ':id_mochila' => $this->id_mochila,
+        ':id_equipe' => $this->id_equipe
+    ]);
+
+    if($ok){
+        $this->id = $pdo->lastInsertId();
+    }
+
+    return $ok;
+}
 
         public function update(){
             $pdo = getConnection();
@@ -132,8 +142,5 @@
             return $usuarios;
         }
     }
-
-    $i = new Usuario();
-    $i = Usuario::getAll();
-    var_dump($i);
+    
 ?>

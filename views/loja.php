@@ -1,3 +1,165 @@
+<?php
+require_once __DIR__ . '/../src/controllers/verificar_login.php';
+require_once __DIR__ . '/../conexao.php';
+
+$pdo = getConnection();
+
+$idUsuario = $_SESSION['usuario_id'];
+
+
+// Processa a compra de um item de evolução
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'comprar_evolucao') {
+
+    header('Content-Type: application/json; charset=utf-8');
+
+    $idItem = filter_input(INPUT_POST, 'id_itens', FILTER_VALIDATE_INT);
+
+    if (!$idItem) {
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => 'Item inválido.'
+        ]);
+        exit;
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        // Bloqueia o registro do usuário durante a compra
+        $stmt = $pdo->prepare("
+            SELECT dinheiro
+            FROM Usuario
+            WHERE id_usuario = :id_usuario
+            FOR UPDATE
+        ");
+
+        $stmt->execute([':id_usuario' => $idUsuario]);
+        $dinheiro = $stmt->fetchColumn();
+
+        if ($dinheiro === false) {
+            throw new Exception('Usuário não encontrado.');
+        }
+
+        // Busca o preço e o Pokebier que será desbloqueado
+        $stmt = $pdo->prepare("
+            SELECT i.preco, ie.id_pb_evo
+            FROM Itens i
+            INNER JOIN Itens_evos ie
+                ON i.id_it_evo = ie.id_it_evo
+            WHERE i.id_itens = :id_item
+        ");
+
+        $stmt->execute([':id_item' => $idItem]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$item) {
+            throw new Exception('Esse item não é um item de evolução.');
+        }
+
+        $idPbEvo = $item['id_pb_evo'];
+        $preco = (int) $item['preco'];
+
+        // Verifica se o Pokebier já está desbloqueado
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*)
+            FROM p_u
+            WHERE id_usuario = :id_usuario
+              AND id_pb = :id_pb
+        ");
+
+        $stmt->execute([
+            ':id_usuario' => $idUsuario,
+            ':id_pb' => $idPbEvo
+        ]);
+
+        if ($stmt->fetchColumn() > 0) {
+            throw new Exception('Você já desbloqueou esse Pokebier!');
+        }
+
+        // Verifica se o jogador tem dinheiro suficiente
+        if ($dinheiro < $preco) {
+            throw new Exception('Você não tem moedas suficientes!');
+        }
+
+        // Registra o Pokebier evoluído como desbloqueado
+        $stmt = $pdo->prepare("
+            INSERT INTO p_u (id_usuario, id_pb)
+            VALUES (:id_usuario, :id_pb)
+        ");
+
+        $stmt->execute([
+            ':id_usuario' => $idUsuario,
+            ':id_pb' => $idPbEvo
+        ]);
+
+        // Desconta o preço do item
+        $stmt = $pdo->prepare("
+            UPDATE Usuario
+            SET dinheiro = dinheiro - :preco
+            WHERE id_usuario = :id_usuario
+        ");
+
+        $stmt->execute([
+            ':preco' => $preco,
+            ':id_usuario' => $idUsuario
+        ]);
+
+        $novoDinheiro = $dinheiro - $preco;
+
+        $pdo->commit();
+
+        echo json_encode([
+            'sucesso' => true,
+            'mensagem' => 'Pokebier desbloqueado com sucesso!',
+            'dinheiro' => $novoDinheiro
+        ]);
+
+    } catch (Exception $e) {
+
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => $e->getMessage()
+        ]);
+    }
+
+    exit;
+}
+
+
+// Busca o dinheiro do usuário
+$stmt = $pdo->prepare(
+    "SELECT dinheiro FROM Usuario WHERE id_usuario = :id_usuario"
+);
+$stmt->execute([':id_usuario' => $idUsuario]);
+
+$dinheiro = $stmt->fetchColumn();
+
+// Busca os itens, colocando os de cura primeiro
+$stmt = $pdo->query("
+    SELECT
+        i.id_itens,
+        i.preco,
+        i.imagem,
+        ic.nome AS nome_cura,
+        ic.qnt_cura_hp,
+        ie.nome AS nome_evo,
+        ie.id_pb,
+        ie.id_pb_evo
+    FROM Itens i
+    LEFT JOIN Itens_cura ic ON i.id_it_cura = ic.id_it_cura
+    LEFT JOIN Itens_evos ie ON i.id_it_evo = ie.id_it_evo
+    ORDER BY
+        CASE WHEN i.id_it_cura IS NOT NULL THEN 0 ELSE 1 END,
+        i.id_itens
+");
+
+$itens = $stmt->fetchAll();
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -102,37 +264,6 @@ body {
     text-shadow: 3px 3px 5px black;
 }
 
-
-#instrucoes-loja {
-    position: fixed;
-    top: 50%;
-    right: 150px;
-    transform: translateY(-50%);
-
-
-    width: 230px;
-    padding: 20px;
-
-
-    color: white;
-    font-size: 15px;
-    line-height: 1.5;
-    text-align: center;
-
-
-    background: rgba(0, 0, 0, 0.85);
-    border: 2px solid white;
-    border-radius: 10px;
-
-
-    text-shadow: 1px 1px 3px black;
-    z-index: 5;
-}
-
-
-#instrucoes-loja p {
-    margin: 10px 0;
-}
 
 
 /* Organização dos itens */
@@ -265,6 +396,20 @@ body {
     }
 }
 
+#saldo-jogador {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #ffd700;
+    border: 2px solid white;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
 
     </style>
 </head>
@@ -290,75 +435,141 @@ body {
     <h1 id="titulo-loja">POKEBIER - LOJA</h1>
 
 
-    <div id="instrucoes-loja">
-    <p>Passe o cursor sobre a imagem de um item para visualizar sua descrição!</p>
-    <p>Role a página para baixo para encontrar mais itens na loja!</p>
-</div>
-
-
     <div id="itens-loja">
 
 
-        <!-- Item 1 -->
+        <div id="itens-loja">
+
+    <?php foreach ($itens as $item): ?>
+
+        <?php
+        // Verifica se o item é de cura ou de evolução
+        $ehCura = !empty($item['nome_cura']);
+
+        if ($ehCura) {
+    $nome = $item['nome_cura'];
+
+    // Descrições dos itens de cura
+    switch ($item['id_itens']) {
+        case 11:
+            $descricao = "Cura 25 de HP na batalha.";
+            break;
+
+        case 12:
+            $descricao = "Cura 50 de HP na batalha.";
+            break;
+
+        case 13:
+            $descricao = "Cura 75 de HP na batalha.";
+            break;
+
+        case 14:
+            $descricao = "Cura 100 de HP na batalha.";
+            break;
+
+        case 15:
+            $descricao = "Cura 15 de HP e revive um Pokebier na batalha.";
+            break;
+
+
+        default:
+            $descricao = "Item de cura.";
+    }
+
+} else {
+    $nome = $item['nome_evo'];
+
+    // Descrições dos itens de evolução
+    switch ($item['id_itens']) {
+        case 1:
+            $descricao = "Desbloqueia a evolução do Spamton.";
+            break;
+
+        case 2:
+            $descricao = "Desbloqueia a evolução do Flowery.";
+            break;
+
+        case 3:
+            $descricao = "Desbloqueia a evolução do Barriguinha Mole.";
+            break;
+
+         case 4:
+            $descricao = "Desbloqueia a evolução do Dark Magician.";
+            break;
+
+        case 5:
+            $descricao = "Desbloqueia a evolução da Mesmer.";
+            break;
+
+        case 6:
+            $descricao = "Desbloqueia a evolução do Chiquinho Gavião.";
+            break;
+
+        case 7:
+            $descricao = "Desbloqueia a evolução do Verity.";
+            break;
+
+        case 8:
+            $descricao = "Desbloqueia a evolução do Inspetor Shepherd.";
+            break;
+
+        case 9:
+            $descricao = "Desbloqueia a evolução do Giorno Giovanna.";
+            break;
+
+        case 10:
+            $descricao = "Desbloqueia a evolução do Eric.";
+            break;
+
+        default:
+            $descricao = "Item de evolução.";
+    }
+}
+        ?>
+
         <div class="item">
-            <div class="imagem-item">
-                <img src="../public/assets/imagens/item1.png" alt="Poção">
-                <div class="descricao-item">
-                    Uma poção especial que recupera a energia do seu monstro.
-                </div>
+
+            <img
+                src="<?= htmlspecialchars($item['imagem']) ?>"
+                alt="<?= htmlspecialchars($nome) ?>"
+                class="imagem-item"
+            >
+
+            <h3><?= htmlspecialchars($nome) ?></h3>
+
+            <div class="descricao">
+                <?= htmlspecialchars($descricao) ?>
             </div>
 
+            <p>
+    <?= htmlspecialchars((string) $item['preco']) ?>
 
-            <h2>Poção</h2>
-            <p>100 moedas</p>
-            <button class="botao-comprar" data-item="Poção">
-                Comprar
-            </button>
+    <?= $item['preco'] == 1 ? 'moeda' : 'moedas' ?>
+</p>
+
+            <button
+    class="botao-comprar"
+    data-item="<?= (int) $item['id_itens'] ?>"
+    data-tipo="<?= $ehCura ? 'cura' : 'evolucao' ?>"
+>
+    Comprar
+</button>
+
         </div>
 
+    <?php endforeach; ?>
 
-        <!-- Item 2 -->
-        <div class="item">
-            <div class="imagem-item">
-                <img src="../public/assets/imagens/item2.png" alt="Super Poção">
-                <div class="descricao-item">
-                    Uma poção mais poderosa, capaz de recuperar bastante energia.
-                </div>
-            </div>
-
-
-            <h2>Super Poção</h2>
-            <p>250 moedas</p>
-            <button class="botao-comprar" data-item="Super Poção">
-                Comprar
-            </button>
-        </div>
-
-
-        <!-- Item 3 -->
-        <div class="item">
-            <div class="imagem-item">
-                <img src="../public/assets/imagens/item3.png" alt="Pokébola">
-                <div class="descricao-item">
-                    Uma cápsula utilizada para capturar novos monstros.
-                </div>
-            </div>
-
-
-            <h2>Pokébola</h2>
-            <p>150 moedas</p>
-            <button class="botao-comprar" data-item="Pokébola">
-                Comprar
-            </button>
-        </div>
-
+</div>
 
     </div>
+    <div id="saldo-jogador">
+    Dinheiro: <?= htmlspecialchars((string) $dinheiro) ?>
+    <?= $dinheiro == 1 ? 'moeda' : 'moedas' ?>
+</div>
 </div>
 
 
 <script>
-
 
 const botaoAcessarLoja = document.getElementById("botao-acessar-loja");
 const telaInicial = document.getElementById("tela-inicial");
@@ -369,23 +580,18 @@ const musicaLoja = document.getElementById("musica-loja");
 // Acessar a loja
 botaoAcessarLoja.addEventListener("click", () => {
 
-
     // Esconde a tela inicial
     telaInicial.style.display = "none";
-
 
     // Mostra a loja
     loja.style.display = "block";
 
-
     // Inicia a música
     musicaLoja.currentTime = 0;
-
 
     musicaLoja.play().catch(erro => {
         console.error("Não foi possível tocar a música:", erro);
     });
-
 
 });
 
@@ -393,20 +599,59 @@ botaoAcessarLoja.addEventListener("click", () => {
 // Botões de compra
 const botoesComprar = document.querySelectorAll(".botao-comprar");
 
-
 botoesComprar.forEach(botao => {
 
+    botao.addEventListener("click", async () => {
 
-    botao.addEventListener("click", () => {
-        const item = botao.dataset.item;
+        // Por enquanto, processa apenas itens de evolução
+        if (botao.dataset.tipo !== "evolucao") {
+            alert("A compra de itens de cura ainda não foi configurada.");
+            return;
+        }
 
+        const idItem = botao.dataset.item;
 
-        alert("Você selecionou: " + item);
+        botao.disabled = true;
+
+        try {
+            const resposta = await fetch(window.location.href, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({
+                    acao: "comprar_evolucao",
+                    id_itens: idItem
+                })
+            });
+
+            const resultado = await resposta.json();
+
+            alert(resultado.mensagem);
+
+            if (resultado.sucesso) {
+
+                // Atualiza o saldo na página
+                const saldo = document.querySelector("#saldo-jogador");
+
+                if (saldo) {
+                    saldo.textContent =
+                        "Dinheiro: " + resultado.dinheiro +
+                        (resultado.dinheiro == 1 ? " moeda" : " moedas");
+                }
+            }
+
+        } catch (erro) {
+            alert("Não foi possível realizar a compra. Tente novamente.");
+            console.error(erro);
+
+        } finally {
+            botao.disabled = false;
+        }
+
     });
 
-
 });
-
 
 </script>
 
