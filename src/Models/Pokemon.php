@@ -4,6 +4,7 @@ class Pokemon{
 
     private $nome;
     private $hp;
+    private $maxhp;
     private $velocidade;
     private $decs;
     private $tipo;
@@ -81,7 +82,11 @@ class Pokemon{
         $this->nome = $nome;
     }
     public function setHp($hp){
-        $this->hp = $hp;
+        if($hp > $this->maxhp){
+            $this->hp = $this->maxhp;
+        } else {
+            $this->hp = $hp;
+        }
     }
     public function setVelocidade($velocidade){
         $this->velocidade = $velocidade;
@@ -172,7 +177,7 @@ class Pokemon{
         $stmt->execute([':id' => $this->id]);
         if($dados = $stmt->fetch(PDO::FETCH_ASSOC)){
             $this->nome = $dados['nome'];
-            $this->hp = $dados['hp'];
+            $this->hp = $this->maxhp = $dados['hp'];   
             $this->velocidade = $dados['velocidade'];
             $this->decs = $dados['decs'];
             $this->tipo = $dados['tipo'];
@@ -234,6 +239,33 @@ class Pokemon{
             $pokemons[] = $p;
         }
         return $pokemons;
+    }
+
+    public function ataque($atk, $alvo){
+        $ataque = 'atk'.$atk;
+        $atk = $this->$ataque;//variavel variavel
+        $atk = Ataques::getOne($atk);
+        $atk = $atk->getDamage();
+        $alvo->setHp($alvo->getHp() - $atk);
+        return $alvo;
+    }
+
+    public function evoluir($item, $pokemon){
+        $item = Itens::getOne($item);
+        $item = Item_evo::getOne($item->getIdItemEvo());
+        if($item->getIdPbBase() == $pokemon->getId()){
+            $pokemon->setId($item->getIdPbEvoluido());
+            $pokemon->load();
+            return $pokemon;
+        }
+        return null;
+    }
+
+    public function curar($item, Pokemon $pokemon){
+        $item = Items::getOne($item);
+        $item = Item_cura::getOne($item->getIdItemCura());
+        $pokemon->setHp($pokemon->getHp() + $item->getCura());
+        return $pokemon;
     }
 }
 

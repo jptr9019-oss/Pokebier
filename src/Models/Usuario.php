@@ -48,30 +48,30 @@
         }
 
         public function insert($pdo = null){
-    // Se não receber uma conexão, cria uma normalmente
-    $pdo = $pdo ?? getConnection();
+            // Se não receber uma conexão, cria uma normalmente
+            $pdo = $pdo ?? getConnection();
 
-    $stmt = $pdo->prepare("
-        INSERT INTO Usuario
-        (apelido, senha, dinheiro, id_mochi, id_equipe)
-        VALUES
-        (:apelido, :senha, :dinheiro, :id_mochila, :id_equipe)
-    ");
+            $stmt = $pdo->prepare("
+                INSERT INTO Usuario
+                (apelido, senha, dinheiro, id_mochi, id_equipe)
+                VALUES
+                (:apelido, :senha, :dinheiro, :id_mochila, :id_equipe)
+            ");
 
-    $ok = $stmt->execute([
-        ':apelido' => $this->apelido,
-        ':senha' => $this->senha,
-        ':dinheiro' => $this->dinheiro,
-        ':id_mochila' => $this->id_mochila,
-        ':id_equipe' => $this->id_equipe
-    ]);
+            $ok = $stmt->execute([
+                ':apelido' => $this->apelido,
+                ':senha' => $this->senha,
+                ':dinheiro' => $this->dinheiro,
+                ':id_mochila' => $this->id_mochila,
+                ':id_equipe' => $this->id_equipe
+            ]);
 
-    if($ok){
-        $this->id = $pdo->lastInsertId();
-    }
+            if($ok){
+                $this->id = $pdo->lastInsertId();
+            }
 
-    return $ok;
-}
+            return $ok;
+        }
 
         public function update(){
             $pdo = getConnection();
@@ -140,6 +140,24 @@
                 $usuarios[] = $usuario;
             }
             return $usuarios;
+        }
+
+        public static function ganhaDinheiro($id_usuario, $quantia){
+            $pdo = getConnection();
+            $stmt = $pdo->prepare("UPDATE usuario SET dinheiro = dinheiro + :quantia WHERE id_usuario = :id");
+            return $stmt->execute([
+                ':quantia' => $quantia,
+                ':id' => $id_usuario
+            ]);
+        }
+
+        public static function gastaDinheiro($id_usuario, $quantia){
+            $pdo = getConnection();
+            $stmt = $pdo->prepare("UPDATE usuario SET dinheiro = dinheiro - :quantia WHERE id_usuario = :id");
+            return $stmt->execute([
+                ':quantia' => $quantia,
+                ':id' => $id_usuario
+            ]);
         }
     }
     
