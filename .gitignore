@@ -29,4 +29,3 @@ storage/*.key
 *.db
 *.db-shm
 *.db-wal
-*.sql
