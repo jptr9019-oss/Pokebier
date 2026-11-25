@@ -93,7 +93,7 @@ insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (1, 'Shildinho', 2
 insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (2, 'Shild', 50);
 insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (3, 'Shildão', 75);
 insert into itens_cura (id_it_cura, nome, qnt_cura_hp) values (4, 'Super shild', 100);
-insert into itens_cura (id_it_cura, nome, qnt_cura_hp, revive) values (5, 'Levantador', 15, 1);
+insert into itens_cura (id_it_cura, nome, qnt_cura_hp, revive) values (5, 'Levantador', 50, 1);
 
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (1, 'Spamton', 60, 8, 1, 1, 2, '../public/assets/imagens/spamton_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (2, 'Flowery', 70, 7, 3, 3, 4, '../public/assets/imagens/flowery_default.png');
@@ -224,3 +224,5 @@ SELECT
     ie.id_pb_evo
 FROM Itens i
 INNER JOIN Itens_evos ie ON i.id_it_evo = ie.id_it_evo;
+
+update itens_cura set qnt_cura_hp = 50 where nome = 'Levantador';
