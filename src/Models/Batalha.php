@@ -128,5 +128,101 @@ if ($jogadorPrimeiro) {
         $this->turno++;
         return true;
     }
+
+    public function trocarPokebier($indice) {
+    if ($this->encerrada) {
+        return false;
+    }
+
+    $indice = (int) $indice;
+
+    // Verifica se o índice existe.
+    if (!isset($this->equipeJogador[$indice])) {
+        return false;
+    }
+
+    $novoPokebier = $this->equipeJogador[$indice];
+
+    // Não permite trocar por um Pokebier derrotado.
+    if ($novoPokebier->getHp() <= 0) {
+        return false;
+    }
+
+    // Não permite escolher o Pokebier que já está ativo.
+    if ($indice === $this->indiceJogador) {
+        return false;
+    }
+
+    // Realiza a troca.
+    $this->indiceJogador = $indice;
+
+    return true;
+}
+
+public function executarTurnoTroca($indice, $ataqueIA) {
+    if ($this->encerrada) {
+        return false;
+    }
+
+    // Primeiro, tenta realizar a troca.
+    if (!$this->trocarPokebier($indice)) {
+        return false;
+    }
+
+    // Obtém os Pokebiers que estão ativos após a troca.
+    $jogador = $this->getPokebierJogador();
+    $ia = $this->getPokebierIA();
+
+    // A IA ataca o novo Pokebier do jogador.
+    $this->executarAtaque($ia, $jogador, $ataqueIA);
+
+    // Se o Pokebier do jogador for derrotado, avança para o próximo.
+    if ($jogador->getHp() <= 0) {
+        $this->avancarPokebier('jogador');
+    }
+
+    // Verifica se a batalha terminou.
+    $this->verificarVencedor();
+
+    // Finaliza o turno.
+    $this->turno++;
+
+    return true;
+}
+
+public function executarTurnoItem($ataqueIA) {
+    if ($this->encerrada) {
+        return false;
+    }
+
+    $jogador = $this->getPokebierJogador();
+    $ia = $this->getPokebierIA();
+
+    if (
+        !$jogador ||
+        !$ia ||
+        $jogador->getHp() <= 0 ||
+        $ia->getHp() <= 0
+    ) {
+        return false;
+    }
+
+    // A IA ataca o Pokebier que está ativo.
+    $this->executarAtaque($ia, $jogador, $ataqueIA);
+
+    // Se o Pokebier ativo for derrotado, avança para o próximo.
+    if ($jogador->getHp() <= 0) {
+        $this->avancarPokebier('jogador');
+    }
+
+    // Verifica se a batalha terminou.
+    $this->verificarVencedor();
+
+    // Finaliza o turno.
+    $this->turno++;
+
+    return true;
+}
+
 }
 ?>

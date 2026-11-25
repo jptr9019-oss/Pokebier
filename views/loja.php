@@ -7,6 +7,154 @@ $pdo = getConnection();
 $idUsuario = $_SESSION['usuario_id'];
 
 
+// Processa a compra de um item de cura
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'comprar_cura') {
+
+    header('Content-Type: application/json; charset=utf-8');
+
+    $idItem = filter_input(INPUT_POST, 'id_itens', FILTER_VALIDATE_INT);
+
+    if (!$idItem) {
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => 'Item inválido.'
+        ]);
+        exit;
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        // Busca e bloqueia o usuário durante a compra
+        $stmt = $pdo->prepare("
+            SELECT dinheiro, id_mochi
+            FROM Usuario
+            WHERE id_usuario = :id_usuario
+            FOR UPDATE
+        ");
+
+        $stmt->execute([':id_usuario' => $idUsuario]);
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$usuario) {
+            throw new Exception('Usuário não encontrado.');
+        }
+
+        // Confere se o item é de cura e busca seu preço
+        $stmt = $pdo->prepare("
+            SELECT i.preco
+            FROM Itens i
+            INNER JOIN Itens_cura ic
+                ON i.id_it_cura = ic.id_it_cura
+            WHERE i.id_itens = :id_item
+        ");
+
+        $stmt->execute([':id_item' => $idItem]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$item) {
+            throw new Exception('Esse não é um item de cura.');
+        }
+
+        $preco = (int) $item['preco'];
+        $dinheiro = (int) $usuario['dinheiro'];
+
+        // Verifica se o jogador tem dinheiro suficiente
+        if ($dinheiro < $preco) {
+            throw new Exception('Você não tem moedas suficientes!');
+        }
+
+        // Busca e bloqueia a mochila
+        $stmt = $pdo->prepare("
+            SELECT *
+            FROM Mochila
+            WHERE id_mochi = :id_mochi
+            FOR UPDATE
+        ");
+
+        $stmt->execute([':id_mochi' => $usuario['id_mochi']]);
+        $mochila = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$mochila) {
+            throw new Exception('Mochila não encontrada.');
+        }
+
+        // Procura o primeiro espaço vazio
+        $colunas = [
+            'id_itens',
+            'id_itens_2',
+            'id_itens_3',
+            'id_itens_4',
+            'id_itens_5'
+        ];
+
+        $colunaVazia = null;
+
+        foreach ($colunas as $coluna) {
+            if (
+                $mochila[$coluna] === null ||
+                (int) $mochila[$coluna] === 0
+            ) {
+                $colunaVazia = $coluna;
+                break;
+            }
+        }
+
+        if ($colunaVazia === null) {
+            throw new Exception('Sua mochila está cheia!');
+        }
+
+        // Coloca o item no primeiro espaço disponível
+        $stmt = $pdo->prepare("
+            UPDATE Mochila
+            SET $colunaVazia = :id_item
+            WHERE id_mochi = :id_mochi
+        ");
+
+        $stmt->execute([
+            ':id_item' => $idItem,
+            ':id_mochi' => $usuario['id_mochi']
+        ]);
+
+        // Desconta o preço do item
+        $stmt = $pdo->prepare("
+            UPDATE Usuario
+            SET dinheiro = dinheiro - :preco
+            WHERE id_usuario = :id_usuario
+        ");
+
+        $stmt->execute([
+            ':preco' => $preco,
+            ':id_usuario' => $idUsuario
+        ]);
+
+        $novoDinheiro = $dinheiro - $preco;
+
+        $pdo->commit();
+
+        echo json_encode([
+            'sucesso' => true,
+            'mensagem' => 'Item de cura comprado com sucesso!',
+            'dinheiro' => $novoDinheiro
+        ]);
+
+    } catch (Exception $e) {
+
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => $e->getMessage()
+        ]);
+    }
+
+    exit;
+}
+
+
+
 // Processa a compra de um item de evolução
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'comprar_evolucao') {
 
@@ -468,7 +616,7 @@ body {
             break;
 
         case 15:
-            $descricao = "Cura 15 de HP e revive um Pokebier na batalha.";
+            $descricao = "Cura 50 de HP e levanta um Pokebier derrotado na batalha (se for usado em um Pokebier que não foi derrotado, só cura 50 de HP).";
             break;
 
 
@@ -603,12 +751,6 @@ botoesComprar.forEach(botao => {
 
     botao.addEventListener("click", async () => {
 
-        // Por enquanto, processa apenas itens de evolução
-        if (botao.dataset.tipo !== "evolucao") {
-            alert("A compra de itens de cura ainda não foi configurada.");
-            return;
-        }
-
         const idItem = botao.dataset.item;
 
         botao.disabled = true;
@@ -620,9 +762,12 @@ botoesComprar.forEach(botao => {
                     "Content-Type": "application/x-www-form-urlencoded"
                 },
                 body: new URLSearchParams({
-                    acao: "comprar_evolucao",
-                    id_itens: idItem
-                })
+    acao: botao.dataset.tipo === "cura"
+        ? "comprar_cura"
+        : "comprar_evolucao",
+
+    id_itens: idItem
+})
             });
 
             const resultado = await resposta.json();
