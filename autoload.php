@@ -1,6 +1,9 @@
 <?php
 spl_autoload_register(function ($class_name) {
-    require_once 'src/models/'.  $class_name . '.php';
-});
+    $arquivo = __DIR__ . '/src/Models/' . $class_name . '.php';
 
+    if (file_exists($arquivo)) {
+        require_once $arquivo;
+    }
+});
 ?>

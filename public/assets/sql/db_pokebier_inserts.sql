@@ -110,7 +110,7 @@ insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (13, 'Barriguinha Mole e Dollynho', 105, 20, 10, 12, 5, 6, 25, 26, 27, '../public/assets/imagens/barriguinha_mole_e_dollynho_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (14, 'Dark Magician of Chaos', 100, 12, 9, 8, 7, 8, 28, 29, 30, '../public/assets/imagens/dark_magician_of_chaos_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (15, 'Mesmer (Despertada)', 90, 21, 7, 8, 9, 10, 28, 29, 31, '../public/assets/imagens/mesmer_despertada_default.png');
-insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (16, 'Chiquinho Gavião Satisfeito', 150, 6, 13, 14, 11, 12, 32, 33, 34, '../public/assets/imagens/chiquinho_gaviao_satisfeito_default.png');
+insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (16, 'Chiquinho Gavião Satisfeito', 150, 6, 13, 14, 11, 12, 32, 33, 34, '../public/assets/imagens/chiquinho_gaviao_satisfeito_default.gif');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (17, 'Lord Verity', 115, 11, 5, 6, 13, 14, 35, 36, 37, '../public/assets/imagens/lord_verity_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (18, 'Con D. Oriano', 120, 13, 17, 18, 15, 16, 38, 39, 40, '../public/assets/imagens/con_d_oriano_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (19, 'Giorno Giovanna (Requiem)', 135, 25, 10, 11, 5, 6, 41, 42, 27, '../public/assets/imagens/giorno_requiem_default.png');
@@ -204,6 +204,10 @@ WHERE id_usuario = 1;
 UPDATE Usuario
 SET dinheiro = dinheiro + 1500
 WHERE id_usuario = 2;
+
+UPDATE Usuario
+SET dinheiro = dinheiro + 2000
+WHERE id_usuario = 3;
 
 SELECT id_usuario, apelido, dinheiro
 FROM Usuario;

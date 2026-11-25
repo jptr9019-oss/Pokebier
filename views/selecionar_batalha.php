@@ -96,10 +96,9 @@ button:hover {
 
                 <p>
                     Enfrente uma equipe fixa de seis Pokebiers!
-                    Prepare sua equipe e mostre sua força!
                 </p>
 
-                <button onclick="location.href='batalha.php'">
+                <button onclick="location.href='batalha_padrao.php?nova=1'">
                     Jogar
                 </button>
             </div>
