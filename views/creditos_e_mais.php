@@ -193,6 +193,51 @@ h1 {
         </div>
 
         <div class="caixa-texto">
+            <h2>Tipos dos Pokebiers</h2>
+            <p>
+                Spamton: vírus
+                <br>
+                Flowery: planta
+                <br>
+                Barriguinha Mole: meme
+                <br>
+                Dark Magician: fogo
+                <br>
+                Mesmer: lutador
+                <br>
+                Chiquinho Gavião: cartoon
+                <br>
+                Verity: hacker
+                <br>
+                Inspetor Shepherd: peak
+                <br>
+                Giorno Giovanna: meme
+                <br>
+                Eric: leader
+                <br>
+                Spamton NEO: vírus e metal
+                <br>
+                OMEGA Flowery: planta e omega
+                <br>
+                Barriguinha Mole e Dollynho: meme e propaganda
+                <br>
+                Dark Magician of Chaos: fogo e ilusionista
+                <br>
+                Mesmer (Despertada): lutador e ilusionista
+                <br>
+                Chiquinho Gavião Satisfeito: cartoon e saudável
+                <br>
+                Lord Verity: hacker e admin
+                <br>
+                Con D. Oriano: peak e D.
+                <br>
+                Giorno Giovanna (Requiem): meme e bizarro
+                <br>
+                Evil Eric: leader e evil
+            </p>
+        </div>
+
+        <div class="caixa-texto">
             <h2>Efetividades dos Tipos de Pokebier</h2>
             <p>
                 As efetividades não fazem muito sentido, mas você pode checar elas nessa tabela:
