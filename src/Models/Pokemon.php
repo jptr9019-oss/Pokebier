@@ -2,8 +2,8 @@
 require_once __DIR__ . '/../../conexao.php';
 require_once __DIR__ . '/Ataques.php';
 require_once __DIR__ . '/Itens.php';
-require_once __DIR__ . '/Item_evo.php';
-require_once __DIR__ . '/Item_cura.php';
+require_once __DIR__ . '/ItemEvo.php';
+require_once __DIR__ . '/ItemCura.php';
 
 class Pokemon {
     private $nome;
