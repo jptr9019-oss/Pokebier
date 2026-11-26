@@ -238,6 +238,51 @@ h1 {
         </div>
 
         <div class="caixa-texto">
+            <h2>Velocidade dos Pokebiers</h2>
+            <p>
+                Spamton: 8
+                <br>
+                Flowery: 7
+                <br>
+                Barriguinha Mole: 6
+                <br>
+                Dark Magician: 7
+                <br>
+                Mesmer: 8
+                <br>
+                Chiquinho Gavião: 5
+                <br>
+                Verity: 7
+                <br>
+                Inspetor Shepherd: 6
+                <br>
+                Giorno Giovanna: 7
+                <br>
+                Eric: 7
+                <br>
+                Spamton NEO: 10
+                <br>
+                OMEGA Flowery: 9
+                <br>
+                Barriguinha Mole e Dollynho: 20
+                <br>
+                Dark Magician of Chaos: 12
+                <br>
+                Mesmer (Despertada): 21
+                <br>
+                Chiquinho Gavião Satisfeito: 6
+                <br>
+                Lord Verity: 11
+                <br>
+                Con D. Oriano: 13
+                <br>
+                Giorno Giovanna (Requiem): 25
+                <br>
+                Evil Eric: 11
+            </p>
+        </div>
+
+        <div class="caixa-texto">
             <h2>Efetividades dos Tipos de Pokebier</h2>
             <p>
                 As efetividades não fazem muito sentido, mas você pode checar elas nessa tabela:
