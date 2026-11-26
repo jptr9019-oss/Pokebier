@@ -16,7 +16,7 @@ A versão final do projeto está disponível na branch "main" deste repositório
 
 Baixe ou clone o contéudo da branch "main" deste repositório.
 
-Coloque a pasta Pokebier dentro da pasta htdocs do XAMPP.
+Coloque a pasta Pokebier-main dentro da pasta htdocs do XAMPP.
 
 Inicie os serviços Apache e MySQL pelo painel do XAMPP.
 
