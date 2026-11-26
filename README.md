@@ -20,7 +20,7 @@ Coloque a pasta Pokebier-main dentro da pasta htdocs do XAMPP.
 
 Inicie os serviços Apache e MySQL pelo painel do XAMPP.
 
-Acesse o seguinte endereço pelo navegador: http://localhost/Pokebier-main/views/inicio_pokebier.php
+Acesse o seguinte endereço pelo navegador: http://localhost/Pokebier-main/Pokebier-main/views/inicio_pokebier.php
 
 3 - BANCO DE DADOS:
 
