@@ -3,8 +3,11 @@ Como executar o projeto:
 1 - REQUISITOS:
 
 XAMPP instalado.
+
 Apache e MySQL.
+
 PHP com suporte a PDO e PDO MySQL.
+
 Navegador de internet.
 
 2 - INSTALAÇÃO:
