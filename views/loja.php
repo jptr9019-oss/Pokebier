@@ -1,10 +1,53 @@
 <?php
 require_once __DIR__ . '/../src/controllers/verificar_login.php';
 require_once __DIR__ . '/../conexao.php';
+require_once __DIR__ . '/../autoload.php';
 
 $pdo = getConnection();
 
 $idUsuario = $_SESSION['usuario_id'];
+
+// Botão de debug: adiciona dinheiro ao usuário
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'debug_dinheiro') {
+
+    header('Content-Type: application/json; charset=utf-8');
+
+    try {
+        $sucesso = Usuario::debugGanhaDinheiro($idUsuario, 3000);
+
+        if (!$sucesso) {
+            throw new Exception('Não foi possível adicionar o dinheiro.');
+        }
+
+        // Busca o saldo atualizado
+        $stmt = $pdo->prepare("
+            SELECT dinheiro
+            FROM Usuario
+            WHERE id_usuario = :id_usuario
+        ");
+
+        $stmt->execute([':id_usuario' => $idUsuario]);
+        $novoDinheiro = $stmt->fetchColumn();
+
+        if ($novoDinheiro === false) {
+            throw new Exception('Usuário não encontrado.');
+        }
+
+        echo json_encode([
+            'sucesso' => true,
+            'mensagem' => 'Você recebeu 3000 moedas!',
+            'dinheiro' => (int) $novoDinheiro
+        ]);
+
+    } catch (Exception $e) {
+        echo json_encode([
+            'sucesso' => false,
+            'mensagem' => $e->getMessage()
+        ]);
+    }
+
+    exit;
+}
 
 
 // Processa a compra de um item de cura
@@ -558,6 +601,34 @@ body {
     font-weight: bold;
 }
 
+#botao-debug {
+    position: fixed;
+    bottom: 85px;
+    left: 20px;
+    z-index: 1000;
+
+    padding: 12px 20px;
+    background: #6b238e;
+    color: white;
+    border: 2px solid white;
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#botao-debug:hover {
+    background: #9135b8;
+    transform: scale(1.05);
+}
+
+#botao-debug:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 
     </style>
 </head>
@@ -714,6 +785,11 @@ body {
     Dinheiro: <?= htmlspecialchars((string) $dinheiro) ?>
     <?= $dinheiro == 1 ? 'moeda' : 'moedas' ?>
 </div>
+
+<button id="botao-debug">
+    DEBUG: +3000 moedas
+</button>
+
 </div>
 
 
@@ -796,6 +872,45 @@ botoesComprar.forEach(botao => {
 
     });
 
+});
+
+// Botão de debug para adicionar dinheiro
+const botaoDebug = document.getElementById("botao-debug");
+
+botaoDebug.addEventListener("click", async () => {
+
+    botaoDebug.disabled = true;
+
+    try {
+        const resposta = await fetch(window.location.href, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                acao: "debug_dinheiro"
+            })
+        });
+
+        const resultado = await resposta.json();
+
+        alert(resultado.mensagem);
+
+        if (resultado.sucesso) {
+            const saldo = document.querySelector("#saldo-jogador");
+
+            saldo.textContent =
+                "Dinheiro: " + resultado.dinheiro +
+                (resultado.dinheiro == 1 ? " moeda" : " moedas");
+        }
+
+    } catch (erro) {
+        alert("Não foi possível adicionar o dinheiro.");
+        console.error(erro);
+
+    } finally {
+        botaoDebug.disabled = false;
+    }
 });
 
 </script>
