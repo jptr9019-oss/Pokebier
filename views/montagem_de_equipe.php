@@ -447,7 +447,7 @@ h1 {
         { id: 7, nome: "Verity", imagem: "verity_default.png", evolucao: false, desbloqueado: true },
         { id: 8, nome: "Inspetor Shepherd", imagem: "inspetor_shepherd_default.png", evolucao: false, desbloqueado: true },
         { id: 9, nome: "Giorno Giovanna", imagem: "giorno_default.png", evolucao: false, desbloqueado: true },
-        { id: 10, nome: "Eric", imagem: "imagem_para_teste.png", evolucao: false, desbloqueado: true },
+        { id: 10, nome: "Eric", imagem: "eric.png", evolucao: false, desbloqueado: true },
 
         // Evoluções: começam bloqueadas
         { id: 11, nome: "Spamton NEO", imagem: "spamton_neo_default.gif", evolucao: true, desbloqueado: false },
@@ -459,7 +459,7 @@ h1 {
         { id: 17, nome: "Lord Verity", imagem: "lord_verity_default.png", evolucao: true, desbloqueado: false },
         { id: 18, nome: "Con D. Oriano", imagem: "con_d_oriano_default.png", evolucao: true, desbloqueado: false },
         { id: 19, nome: "Giorno Giovanna (Requiem)", imagem: "giorno_requiem_default.png", evolucao: true, desbloqueado: false },
-        { id: 20, nome: "Evil Eric", imagem: "imagem_para_teste.png", evolucao: true, desbloqueado: false }
+        { id: 20, nome: "Evil Eric", imagem: "evileric.png", evolucao: true, desbloqueado: false }
     ];
 
 

@@ -397,7 +397,7 @@ insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, e
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (7, 'Verity', 60, 7, 5, 13, 14, '../public/assets/imagens/verity_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (8, 'Inspetor Shepherd', 60, 6, 17, 15, 16, '../public/assets/imagens/inspetor_shepherd_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (9, 'Giorno Giovanna', 60, 7, 10, 5, 6, '../public/assets/imagens/giorno_default.png');
-insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (10, 'Eric', 65, 7, 15, 17, 18, '../public/assets/imagens/imagem_para_teste.png');
+insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_atk1, id_atk2, endimagem) values (10, 'Eric', 65, 7, 15, 17, 18, '../public/assets/imagens/eric.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (11, 'Spamton NEO', 110, 10, 1, 2, 1, 2, 19, 20, 21, '../public/assets/imagens/spamton_neo_default.gif');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (12, 'OMEGA Flowery', 120, 9, 3, 4, 3, 4, 22, 23, 24, '../public/assets/imagens/omega_flowery_default.gif');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (13, 'Barriguinha Mole e Dollynho', 105, 20, 10, 12, 5, 6, 25, 26, 27, '../public/assets/imagens/barriguinha_mole_e_dollynho_default.png');
@@ -407,7 +407,7 @@ insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (17, 'Lord Verity', 115, 11, 5, 6, 13, 14, 35, 36, 37, '../public/assets/imagens/lord_verity_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (18, 'Con D. Oriano', 120, 13, 17, 18, 15, 16, 38, 39, 40, '../public/assets/imagens/con_d_oriano_default.png');
 insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (19, 'Giorno Giovanna (Requiem)', 135, 25, 10, 11, 5, 6, 41, 42, 27, '../public/assets/imagens/giorno_requiem_default.png');
-insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (20, 'Evil Eric', 120, 11, 15, 16, 17, 18, 43, 44, 45, '../public/assets/imagens/imagem_para_teste.png');
+insert into pokebiers (id_pb, nome, hp, velocidade, id_tipo, id_subtipo, id_atk1, id_atk2, id_atk3, id_atk4, id_atk_s, endimagem) values (20, 'Evil Eric', 120, 11, 15, 16, 17, 18, 43, 44, 45, '../public/assets/imagens/evileric.png');
 
 INSERT INTO Itens_evos (nome, id_pb, id_pb_evo)
 VALUES

@@ -122,7 +122,7 @@ body {
     <!-- Logo do jogo -->
     <img 
         id="logo-jogo" 
-        src="../public/assets/imagens/logo_monstrobolso.png" 
+        src="../public/assets/imagens/pokebierlogo.png" 
         alt="Logo Monstrobolso"
     >
 

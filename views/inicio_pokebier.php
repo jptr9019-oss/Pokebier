@@ -477,6 +477,14 @@ if ($erroInstalacao !== '') {
                 padding: 25px 20px;
             }
         }
+
+        #logo-pokebier {
+    width: 250px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 25px;
+}
     </style>
 </head>
 
@@ -511,7 +519,11 @@ if ($erroInstalacao !== '') {
 
         <div id="caixa-autenticacao">
 
-            <h1>POKEBIER</h1>
+            <img
+    src="../public/assets/imagens/pokebierlogo.png"
+    alt="Pokebier"
+    id="logo-pokebier"
+>
 
             <?php if ($mensagem !== ''): ?>
     <p><?= htmlspecialchars($mensagem) ?></p>
