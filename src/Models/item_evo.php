@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../../conexao.php';
 
-class Item_evo {
-    private $nome;
-    private $id;
+class Item_evo extends Item {
+    //private $nome;
+    //private $id;
     private $id_pb_base;
     private $id_pb_evoluido;
 

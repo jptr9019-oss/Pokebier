@@ -1,19 +1,19 @@
 <?php
 require_once __DIR__ . '/../../conexao.php';
 
-class Item_cura {
-    private $nome;
-    private $id;
+class Item_cura extends Item {
+    //private $nome;
+    //private $id;
     private $qnt_cura;
     private $revive;
 
-    public function getId() { return $this->id; }
-    public function getNome() { return $this->nome; }
+    //public function getId() { return $this->id; }
+    //public function getNome() { return $this->nome; }
     public function getQntCura() { return $this->qnt_cura; }
     public function getRevive() { return $this->revive; }
 
-    public function setNome($nome) { $this->nome = $nome; }
-    public function setId($id) { $this->id = $id; }
+    //public function setNome($nome) { $this->nome = $nome; }
+    //public function setId($id) { $this->id = $id; }
     public function setQntCura($qntCura) { $this->qnt_cura = $qntCura; }
     public function setRevive($revive) { $this->revive = $revive; }
 
