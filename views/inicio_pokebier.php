@@ -1,21 +1,175 @@
+
 <?php
 session_start();
 
+$mensagem = "";
+$erroInstalacao = "";
+
+// PREPARAÇÃO AUTOMÁTICA DO BANCO
+function prepararBanco() {
+
+    $host = "localhost";
+    $usuarioBanco = "root";
+    $senhaBanco = "";
+    $nomeBanco = "db_pokebier";
+
+    // Conecta ao MySQL sem selecionar um banco
+    $pdoServidor = new PDO(
+        "mysql:host=$host;charset=utf8mb4",
+        $usuarioBanco,
+        $senhaBanco,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]
+    );
+
+    // Verifica se o banco já existe
+    $stmt = $pdoServidor->prepare("
+        SELECT COUNT(*)
+        FROM information_schema.schemata
+        WHERE schema_name = :banco
+    ");
+
+    $stmt->execute([':banco' => $nomeBanco]);
+
+    $bancoExiste = (bool) $stmt->fetchColumn();
+
+    // Cria o banco se ainda não existir
+    if (!$bancoExiste) {
+
+        $pdoServidor->exec("
+            CREATE DATABASE `$nomeBanco`
+            CHARACTER SET utf8mb4
+            COLLATE utf8mb4_unicode_ci
+        ");
+    }
+
+    // Agora conecta ao banco do jogo
+    $pdo = new PDO(
+        "mysql:host=$host;dbname=$nomeBanco;charset=utf8mb4",
+        $usuarioBanco,
+        $senhaBanco,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ]
+    );
+
+    // Verifica quantas das 11 tabelas esperadas já existem
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM information_schema.tables
+        WHERE table_schema = :banco
+        AND table_name IN (
+            'Atks',
+            'Efeitos',
+            'Equipe',
+            'Itens',
+            'Itens_cura',
+            'Itens_evos',
+            'Mochila',
+            'Pokebiers',
+            'Tipos',
+            'Usuario',
+            'p_u'
+        )
+    ");
+
+    $stmt->execute([':banco' => $nomeBanco]);
+
+    $quantidadeTabelas = (int) $stmt->fetchColumn();
+
+    // Se todas as tabelas já existem, não instala novamente
+    if ($quantidadeTabelas === 11) {
+        return;
+    }
+
+    // Não tenta reconstruir um banco parcialmente instalado
+    if ($quantidadeTabelas > 0) {
+        throw new Exception(
+            "O banco existe, mas está com uma instalação incompleta. 
+            Nenhum dado foi apagado ou sobrescrito."
+        );
+    }
+
+    // Localiza o arquivo SQL
+    $caminhoSql = __DIR__ . '/../public/assets/sql/db_pokebier_instalacao.sql';
+
+    if (!file_exists($caminhoSql)) {
+        throw new Exception(
+            "Arquivo db_pokebier_instalacao.sql não encontrado."
+        );
+    }
+
+    $sql = file_get_contents($caminhoSql);
+
+    if ($sql === false) {
+        throw new Exception("Não foi possível ler o arquivo SQL.");
+    }
+
+    // Remove comentários de linha do arquivo
+    $sql = preg_replace('/^\s*--.*$/m', '', $sql);
+
+    // Divide o arquivo em comandos SQL
+    $comandos = explode(';', $sql);
+
+    foreach ($comandos as $comando) {
+
+        $comando = trim($comando);
+
+        if ($comando === '') {
+            continue;
+        }
+
+        // O banco já foi criado e selecionado pelo PDO
+        if (preg_match('/^(CREATE\s+DATABASE|USE)\b/i', $comando)) {
+            continue;
+        }
+
+        $pdo->exec($comando);
+    }
+
+    // Confirma se a instalação terminou corretamente
+    $stmt->execute([':banco' => $nomeBanco]);
+
+    if ((int) $stmt->fetchColumn() !== 11) {
+        throw new Exception(
+            "A instalação do banco não foi concluída corretamente."
+        );
+    }
+}
+
+
+// Tenta preparar o banco antes de mostrar os formulários
+try {
+
+    prepararBanco();
+
+} catch (Throwable $e) {
+
+    $erroInstalacao =
+        "Não foi possível preparar o banco de dados: " .
+        $e->getMessage();
+}
+
+
+// Carrega os arquivos do projeto depois da preparação
 require_once __DIR__ . '/../autoload.php';
 require_once __DIR__ . '/../conexao.php';
 
-$mensagem = "";
+if ($erroInstalacao !== '') {
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $mensagem = $erroInstalacao;
+
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $acao = $_POST['acao'] ?? '';
 
+    // CADASTRO
     if ($acao === 'cadastro') {
 
         $apelido = trim($_POST['apelido'] ?? '');
         $senha = $_POST['senha'] ?? '';
-
-        $pdo = getConnection();
 
         if ($apelido === '' || $senha === '') {
 
@@ -23,32 +177,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } else {
 
-            $pdo = getConnection();
-
             try {
+
+                $pdo = getConnection();
 
                 $pdo->beginTransaction();
 
-                // 1. Verifica se o apelido já existe
+                // Verifica se o apelido já existe
                 $stmt = $pdo->prepare(
-                    "SELECT id_usuario FROM Usuario WHERE apelido = :apelido"
+                    "SELECT id_usuario
+                     FROM Usuario
+                     WHERE apelido = :apelido"
                 );
 
                 $stmt->execute([':apelido' => $apelido]);
 
                 if ($stmt->fetch()) {
-                    throw new Exception("Esse apelido já está sendo utilizado!");
+                    throw new Exception(
+                        "Esse apelido já está sendo utilizado!"
+                    );
                 }
 
-                // 2. Cria uma mochila vazia
+                // Cria uma mochila vazia
                 $pdo->exec("INSERT INTO Mochila () VALUES ()");
 
                 $idMochila = $pdo->lastInsertId();
 
-                // 3. Cria a equipe com os seis Pokébiers padrão
+                // Cria a equipe inicial
                 $stmt = $pdo->prepare("
                     INSERT INTO Equipe
-                    (id_pb, id_pb_2, id_pb_3, id_pb_4, id_pb_5, id_pb_6)
+                    (id_pb, id_pb_2, id_pb_3,
+                     id_pb_4, id_pb_5, id_pb_6)
                     VALUES (1, 2, 3, 4, 5, 6)
                 ");
 
@@ -56,12 +215,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $idEquipe = $pdo->lastInsertId();
 
-                // 4. Cria o usuário
+                // Cria o usuário
                 $usuario = new Usuario();
 
                 $usuario->setApelido($apelido);
 
-                // Protege a senha
                 $usuario->setSenha(
                     password_hash($senha, PASSWORD_DEFAULT)
                 );
@@ -70,63 +228,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $usuario->setIdMochila($idMochila);
                 $usuario->setIdEquipe($idEquipe);
 
-                // Utiliza a mesma conexão da transação
                 $usuario->insert($pdo);
 
-            
                 $pdo->commit();
 
-// Inicia a sessão do jogador
-$_SESSION['usuario_id'] = $usuario->getId();
-$_SESSION['usuario_apelido'] = $usuario->getApelido();
+                // Inicia a sessão
+                $_SESSION['usuario_id'] = $usuario->getId();
+                $_SESSION['usuario_apelido'] = $usuario->getApelido();
 
-// Entra no jogo
-header("Location: pokebier_menu.php");
-exit;
+                header("Location: pokebier_menu.php");
+                exit;
 
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
 
-                if ($pdo->inTransaction()) {
+                if (isset($pdo) && $pdo->inTransaction()) {
                     $pdo->rollBack();
                 }
 
                 $mensagem = "Erro ao cadastrar: " . $e->getMessage();
             }
         }
+
+    // LOGIN
     } elseif ($acao === 'login') {
 
-    $apelido = trim($_POST['apelido'] ?? '');
-    $senha = $_POST['senha'] ?? '';
+        $apelido = trim($_POST['apelido'] ?? '');
+        $senha = $_POST['senha'] ?? '';
 
-     $pdo = getConnection();
+        try {
 
-    $stmt = $pdo->prepare(
-        "SELECT * FROM Usuario WHERE apelido = :apelido"
-    );
+            $pdo = getConnection();
 
-    $stmt->execute([':apelido' => $apelido]);
+            $stmt = $pdo->prepare(
+                "SELECT *
+                 FROM Usuario
+                 WHERE apelido = :apelido"
+            );
 
-    $dados = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt->execute([':apelido' => $apelido]);
 
-    if ($dados && password_verify($senha, $dados['senha'])) {
+            $dados = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Login correto
-        session_regenerate_id(true);
+            if ($dados && password_verify($senha, $dados['senha'])) {
 
-        $_SESSION['usuario_id'] = $dados['id_usuario'];
-        $_SESSION['usuario_apelido'] = $dados['apelido'];
+                session_regenerate_id(true);
 
-        header("Location: pokebier_menu.php");
-        exit;
+                $_SESSION['usuario_id'] = $dados['id_usuario'];
+                $_SESSION['usuario_apelido'] = $dados['apelido'];
 
-    } else {
+                header("Location: pokebier_menu.php");
+                exit;
 
-        $mensagem = "Apelido ou senha incorretos!";
+            } else {
+
+                $mensagem = "Apelido ou senha incorretos!";
+            }
+
+        } catch (Throwable $e) {
+
+            $mensagem = "Erro ao realizar login: " . $e->getMessage();
+        }
     }
 }
-}
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-br">
