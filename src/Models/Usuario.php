@@ -125,5 +125,14 @@ class Usuario {
         );
         return $stmt->execute([':quantia' => $quantia, ':id' => $id_usuario]);
     }
+
+    public static function debugGanhaDinheiro($id_usuario, $quantia = 3000) {
+        if ($quantia <= 0) return false;
+        $pdo = getConnection();
+        $stmt = $pdo->prepare(
+            "UPDATE usuario SET dinheiro = dinheiro + :quantia WHERE id_usuario = :id"
+        );
+        return $stmt->execute([':quantia' => $quantia, ':id' => $id_usuario]);
+    }
 }
 ?>
