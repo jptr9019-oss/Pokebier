@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../conexao.php';
 
-class Item_evo extends Item {
+class ItemEvo extends Item {
     //private $nome;
     //private $id;
     private $id_pb_base;
@@ -75,7 +75,7 @@ class Item_evo extends Item {
 
         if (!$dados) return null;
 
-        $item = new Item_evo();
+        $item = new ItemEvo();
         $item->setId($dados['id_it_evo']);
         $item->setNome($dados['nome']);
         $item->setIdPbBase($dados['id_pb']);
@@ -89,7 +89,7 @@ class Item_evo extends Item {
         $itens = [];
 
         while ($dados = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $item = new Item_evo();
+            $item = new ItemEvo();
             $item->setId($dados['id_it_evo']);
             $item->setNome($dados['nome']);
             $item->setIdPbBase($dados['id_pb']);

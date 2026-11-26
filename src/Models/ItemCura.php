@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../conexao.php';
 
-class Item_cura extends Item {
+class ItemCura extends Item {
     //private $nome;
     //private $id;
     private $qnt_cura;
@@ -75,7 +75,7 @@ class Item_cura extends Item {
 
         if (!$dados) return null;
 
-        $item = new Item_cura();
+        $item = new ItemCura();
         $item->setId($dados['id_it_cura']);
         $item->setNome($dados['nome']);
         $item->setQntCura($dados['qnt_cura_hp']);
@@ -89,7 +89,7 @@ class Item_cura extends Item {
         $itens = [];
 
         while ($dados = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $item = new Item_cura();
+            $item = new ItemCura();
             $item->setId($dados['id_it_cura']);
             $item->setNome($dados['nome']);
             $item->setQntCura($dados['qnt_cura_hp']);
